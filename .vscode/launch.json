@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "type": "firefox",
+            "name": "http://FormWithApiTest",
+            "request": "launch",
+            "url": "http://FormWithApiTest"
+        }
+    ]
+}
