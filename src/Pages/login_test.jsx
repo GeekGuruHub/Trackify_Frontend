@@ -3,8 +3,6 @@ import  { Fragment, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 
-
-
 function LoginTest() {
     const [Email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -53,15 +51,23 @@ function LoginTest() {
 
     return (
         <Fragment>
-            <Header/>
-            <div>Login Test</div>
-            <label>Email: </label>
-            <input type="text" id="txtEmail" placeholder="Email" onChange={(e) => handelEmailChange(e.target.value)} /><br></br>
-            <label>Password: </label>
-            <input type="password" id="txtPassword" placeholder="Password" onChange={(e) => handelPasswordChange(e.target.value)}></input><br />
-            <br /><br />
-            <button onClick={() => handelLogin()}>Login!</button>
+            <div className="h1"><Header/>
+            </div>
         
+            <div className="wrapper">
+                <div className="loginDetails">
+                    <div>Login Test</div>
+                    <label>Email: </label>
+                    <input type="text" id="txtEmail" placeholder="Email" onChange={(e) => handelEmailChange(e.target.value)} /><br></br>
+                    <label>Password: </label>
+                    <input type="password" id="txtPassword" placeholder="Password" onChange={(e) => handelPasswordChange(e.target.value)}></input><br />
+                    <br /><br />
+                    <button onClick={() => handelLogin()}>Login!</button>
+                </div>
+            </div>
+        
+            
+    
         </Fragment>
     );
 }

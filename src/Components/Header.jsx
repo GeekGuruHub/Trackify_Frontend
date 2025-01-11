@@ -1,7 +1,10 @@
+import Logo from '../images/trackify.png'
 function Header(){
     return(
-        <header>
-            <h1><h1>Trakify</h1></h1>
+        <header className="header">
+            <div>
+                <img src= {Logo} alt="" />
+            </div>
         </header>
     );
 }

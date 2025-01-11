@@ -53,17 +53,22 @@ function Registration(){
     return(
         <Fragment>
             <Header/>
+            
             <div>Registration</div>
-            <label>Email: </label>
-            <input type="text" id="txtEmail" placeholder="Email" onChange={(e) => handelEmailChange(e.target.value)} /><br></br>
-            <label>Password: </label>
-            <input type="text" id="txtPassword" placeholder="Password" onChange={(e) => handelPasswordChange(e.target.value)}></input><br />
-            <label>First Name: </label>
-            <input type="text" id="txtFirstName" placeholder="First Name" onChange={(e) => handelFirstNameChange(e.target.value)}/><br />
-            <label>Last Name: </label>
-            <input type="text" id="txtlastName" placeholder="Last Name" onChange={(e) => handelLastNameChange(e.target.value)}/>
-            <br /><br />
-            <button onClick={()=> handelSave()}>Register!</button>
+                <label>Email: </label>
+                <input type="text" id="txtEmail" placeholder="Email" onChange={(e) => handelEmailChange(e.target.value)} /><br></br>
+                <label>Password: </label>
+                <input type="text" id="txtPassword" placeholder="Password" onChange={(e) => handelPasswordChange(e.target.value)}></input><br />
+                <label>First Name: </label>
+                <input type="text" id="txtFirstName" placeholder="First Name" onChange={(e) => handelFirstNameChange(e.target.value)}/><br />
+                <label>Last Name: </label>
+                <input type="text" id="txtlastName" placeholder="Last Name" onChange={(e) => handelLastNameChange(e.target.value)}/>
+                <br /><br />
+                <button onClick={()=> handelSave()}>Register!</button>
+            
+
+            
+
         </Fragment>
     );
 
