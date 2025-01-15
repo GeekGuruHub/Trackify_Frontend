@@ -1,23 +1,25 @@
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
+import ExpenseTracker from "./ExpenseTracker";
 
 function Dashboard(){
 
     const navigate = useNavigate();
 
-    const goToLogin = () =>{
+    const goToForm = () =>{
         navigate("/login_test");
     }
 
-    const toExpenseTrackerTest = () =>{
-        navigate("/ExpenseTracker");
+    const toExpenseForm = () =>{
+        navigate("/ExpenseForm");
     }
 
     return(
         <Fragment>
             <div>Welcome to the Dashboard!</div>
-            <button onClick={() => goToLogin()}>Go back to login</button>
-            <button onClick={() => toExpenseTrackerTest()}>Expense Test</button>
+            <button onClick={() => goToForm()}>Go back to login</button>
+            <button onClick={() => toExpenseForm()}>Expense Test</button>
+            <ExpenseTracker/>
         </Fragment>
     );
 }

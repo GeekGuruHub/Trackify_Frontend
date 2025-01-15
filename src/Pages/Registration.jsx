@@ -54,7 +54,7 @@ function Registration(){
         <Fragment>
             <Header/>
             
-            <div>Registration</div>
+            <div>Registration!</div>
                 <label>Email: </label>
                 <input type="text" id="txtEmail" placeholder="Email" onChange={(e) => handelEmailChange(e.target.value)} /><br></br>
                 <label>Password: </label>

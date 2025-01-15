@@ -1,3 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body{
+  margin: 0;
+  color-scheme: light dark;
+  color: white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #1a1717;
+}
+
+/*
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -25,7 +39,7 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
+  
   min-width: 320px;
   min-height: 100vh;
 }
@@ -47,7 +61,7 @@ button {
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: limegreen;
 }
 button:focus,
 button:focus-visible {
@@ -60,7 +74,7 @@ button:focus-visible {
     background-color: #ffffff;
   }
   a:hover {
-    color: #747bff;
+    color: limegreen;
   }
   button {
     background-color: #f9f9f9;
@@ -70,3 +84,9 @@ button:focus-visible {
 #btnTest{
   padding: 20px;;
 }
+
+/*
+/* form page css*/
+
+/* ----------------- */
+
