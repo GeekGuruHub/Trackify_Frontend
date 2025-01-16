@@ -8,7 +8,7 @@ const ExpenseTracker = () => {
     date: "",
   });
   const [totalExpense, setTotalExpense] = useState(0); // State for total expenses
-  const [currency, setCurrency] = useState("ZAR"); // State for selected currency
+  const [currency, setCurrency] = useState("R"); // State for selected currency
 
   const handleChange = (e) => {
     setFormData({
@@ -32,59 +32,94 @@ const ExpenseTracker = () => {
     const response = await fetch("https://localhost:44351/api/connectDB/GetAllExpenses");
     if (response.ok) {
       const data = await response.json();
+      console.log("Fetched Expenses:", data); // Add this log to check the data structure
       setExpenses(data);
       const total = data.reduce((sum, expense) => sum + parseFloat(expense.Amount), 0);
       setTotalExpense(total);
     }
   };
+  
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Ensure that required form fields are filled
     if (formData.name && formData.amount && formData.date) {
-      const expenseData = {
-        ExpenseName: formData.name,
-        Amount: parseFloat(formData.amount),
-        Date: formData.date,
-        Currency: currency,
-      };
+        // Retrieve user info from localStorage
+        const userEmail = localStorage.getItem("userEmail");
+        const userFirstName = localStorage.getItem("userName");
 
-      const response = await fetch("https://localhost:44351/api/connectDB/addExpense", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(expenseData),
-      });
+        console.log("email:", userEmail);
+        console.log("fn:", userFirstName);
 
-      if (response.ok) {
-        // After adding the expense, fetch all expenses and recalculate total
-        fetchExpenses();
-        setFormData({ name: "", amount: "", date: "" });
-      }
+        // Construct the expense data, including user info
+        const expenseData = {
+            ExpenseName: formData.name,
+            Amount: parseFloat(formData.amount),  // Ensure amount is parsed as float
+            Date: formData.date,
+            Currency: currency,
+            UserEmail: userEmail,           // Add user email
+            UserFirstName: userFirstName    // Add user first name
+        };
+
+        // Send the expense data to the backend
+        const response = await fetch("https://localhost:44351/api/connectDB/addExpense", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(expenseData),
+        });
+
+        if (response.ok) {
+            // After adding the expense, fetch all expenses and recalculate the total
+            fetchExpenses();
+            setFormData({ name: "", amount: "", date: "" });
+        } else {
+            // Handle any errors if the request is not successful
+            alert("Error: Unable to add expense.");
+        }
+    } else {
+        // Display an alert if required fields are missing
+        alert("Please fill in all required fields.");
     }
-  };
+};
 
-  const handleDelete = async (id, amount) => {
-    try {
-      // Make the DELETE request to the backend API
-      const response = await fetch(`https://localhost:44351/api/connectDB/DeleteExpense/${id}`, {
-        method: "DELETE",
-      });
-  
-      if (response.ok) {
-        // Update the local state by filtering out the deleted expense
-        setExpenses(expenses.filter((expense) => expense.ExpenseID !== id));
-  
-        // Update the total expense
-        setTotalExpense((prevTotal) => prevTotal - parseFloat(amount));
-      } else {
-        const errorData = await response.json();
-        console.error("Error deleting expense:", errorData.message);
-      }
-    } catch (error) {
-      console.error("Error:", error);
+
+const handleDelete = async (id, amount) => {
+  try {
+    console.log("Expense ID passed to delete:", id);
+    
+    const userEmail = localStorage.getItem("userEmail");
+    console.log("User email from localStorage:", userEmail);
+
+    // Validate that both id and userEmail exist
+    if (!id || !userEmail) {
+      alert("Expense ID or User Email is missing.");
+      return;
     }
-  };
-  
+
+    // Send DELETE request to the backend
+    const response = await fetch(`https://localhost:44351/api/connectDB/DeleteExpense/${id}?userEmail=${userEmail}`, {
+      method: "DELETE",
+    });
+
+    if (response.ok) {
+      console.log("Expense deleted successfully");
+      // Update the state by removing the deleted expense
+      setExpenses(expenses.filter((expense) => expense.ExpenseID !== id));
+      // Update the total expense
+      setTotalExpense((prevTotal) => prevTotal - parseFloat(amount));
+    } else {
+      const errorData = await response.json();
+      console.error("Error deleting expense:", errorData.message);
+      alert(`Error deleting expense: ${errorData.message}`);
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("An error occurred while deleting the expense.");
+  }
+};
+
 
   useEffect(() => {
     fetchExpenses(); // Fetch expenses on component mount
@@ -162,23 +197,23 @@ const ExpenseTracker = () => {
                 </tr>
               </thead>
               <tbody>
-              {expenses.map((expense) => (
-                <tr key={expense.ExpenseID} className="hover:bg-gray-900">
+                {expenses.map((expense) => (
+                  <tr key={expense.ExpenseID} className="hover:bg-gray-900">
                     <td className="border border-gray-300 p-2">{expense.ExpenseName}</td>
-                    <td className="border border-gray-300 p-2">{expense.Amount} {currency}</td>
-                    <td className="border border-gray-300 p-2">{expense.Date}</td>
+                    <td className="border border-gray-300 p-2">{currency} {expense.Amount} </td>
+                    <td className="border border-gray-300 p-2">{formatDate(expense.Date)}</td>
                     <td className="border border-gray-300 p-2">
-                    <button
+                      <button
                         onClick={() => handleDelete(expense.ExpenseID, expense.Amount)}
                         className="bg-red-500 text-white px-3 py-1 rounded-md"
-                    >
+                      >
                         Delete
-                    </button>
+                      </button>
                     </td>
-                </tr>
-        
-            ))}
+                  </tr>
+                ))}
               </tbody>
+
             </table>
 
             {/* Total Expense Display */}

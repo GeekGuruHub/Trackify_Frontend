@@ -1,25 +1,31 @@
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
-import ExpenseTracker from "./ExpenseTracker";
+import ExpenseForm from "../Components/ExpenseForm";
 
 function Dashboard(){
 
     const navigate = useNavigate();
 
-    const goToForm = () =>{
-        navigate("/login_test");
-    }
-
-    const toExpenseForm = () =>{
-        navigate("/ExpenseForm");
-    }
+    const handleLogout = () => {
+        localStorage.removeItem('userName');
+        localStorage.removeItem('authToken');
+        navigate('/form'); // Redirect user to the login page
+    };
+    
+    const userName = localStorage.getItem("userName");
 
     return(
         <Fragment>
-            <div>Welcome to the Dashboard!</div>
-            <button onClick={() => goToForm()}>Go back to login</button>
-            <button onClick={() => toExpenseForm()}>Expense Test</button>
-            <ExpenseTracker/>
+            <div>Welcome,{userName}!</div>
+            
+            <br/>
+            <ExpenseForm/>
+
+            <br/>
+
+            <div>
+                <button onClick={handleLogout}>Log Out</button>
+            </div>
         </Fragment>
     );
 }

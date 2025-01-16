@@ -28,32 +28,55 @@ function Form(){
                 email: Email.trim(),
                 password: password.trim(),
             };
-    
-            const url = "https://localhost:44351/api/connectDB/Login";  // Adjust the URL as per your API endpoint
-    
+        
+            const url = "https://localhost:44351/api/Auth/Login";  // Adjust the URL as per your API endpoint
+        
             try {
                 const result = await axios.post(url, data, {
                     headers: {
                         "Content-Type": "application/json",
                     },
                 });
-    
-                if(result.data === "Login Successful"){
-                    navigate("/Dashboard");
-                }
+        
                 console.log("Response:", result.data);
-                alert(result.data);
-                
-            } catch (error) {
-                if (error.response) {
-                    console.error("Error Response:", error.response);
-                    alert(`Error: ${error.response.data}`);
+        
+                // Check if the response has a message and a token (successful login)
+                if (result.data.message === "Login Successful") {
+                    // Optionally store the token in local storage/session storage if you need to persist it
+                    localStorage.setItem('authToken', result.data.token);
+                    localStorage.setItem('userName', result.data.userName);
+                    localStorage.setItem('userEmail', result.data.userEmail);
+                    // Example after login
+                    console.log("User email stored in localStorage:", localStorage.getItem("userEmail"));
+                    console.log("Login Response:", result.data);
+
+                    navigate("/Dashboard");
                 } else {
-                    console.error("Error:", error);
+                    alert(`Error: ${result.data.message}`);  // Show message in case of an error or unsuccessful login
+                }
+        
+            } catch (error) {
+                console.error("Full Error Object:", error);
+        
+                if (error.response) {
+                    // Check if the error is an object with a message
+                    if (error.response.data && error.response.data.message) {
+                        alert(`Error: ${error.response.data.message}`);
+                    } else {
+                        alert(`Error: ${JSON.stringify(error.response.data)}`);
+                    }
+                } else if (error.request) {
+                    console.error("Error Request:", error.request);
+                    alert("Network error, please try again.");
+                } else {
+                    console.error("General Error:", error);
                     alert("An error occurred.");
                 }
             }
         };
+        
+        
+        
 
     const [showPassword, setShowPassword] = useState(false);
     const togglePasswordVisibility = () =>{
