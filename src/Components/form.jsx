@@ -6,6 +6,7 @@ import Logo from '../images/trackify.png';
 import { FaFingerprint, FaRegEye, FaEyeSlash   } from "react-icons/fa";
 import { MdAlternateEmail } from "react-icons/md";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 
 function Form(){
@@ -90,18 +91,23 @@ function Form(){
             <div className="w-[90%] max-w-sm md:max-w-md lg:max-w-md p-5 bg-black flex-col flex items-center gap-3 rounded-xl shadow-green-500 shadow-lg">
                 <img src={Logo} alt="logo" className="w-12 md:w-20"/>
                 <h1 className="text-lg md:text-xl font-semibold text-green-500">Welcome Back</h1>
-                <p className="text-xs md:text-sm text-gray-500 text-center">Don't have an account? <span className="text-white">Sign Up</span></p>
-
-                <div className="w-full flex flex-col gap-3">
-                    <div className="w-full flex items-center bg-gray-800 p-2 rounded-xl gap-2">
-                        <MdAlternateEmail className="text-white"/>
-                        <input 
-                        type="email" 
-                        placeholder="Email account" 
-                        className="bg-transparent border-0 w-full outline-none text-sm md:text-base text-white"
-                        onChange={(e) => handelEmailChange(e.target.value)}/>
-                    </div>
-                </div>
+                    <p className="text-xs md:text-sm text-gray-500 text-center">
+                        Don't have an account?{" "}
+                        <Link to="/RegistrationForm" className="text-white hover:underline">
+                            Sign Up
+                        </Link>
+                    </p>
+                    <br/>
+                        <div className="w-full flex flex-col gap-3">
+                            <div className="w-full flex items-center bg-gray-800 p-2 rounded-xl gap-2">
+                                <MdAlternateEmail className="text-white"/>
+                                <input 
+                                type="email" 
+                                placeholder="Email account" 
+                                className="bg-transparent border-0 w-full outline-none text-sm md:text-base text-white"
+                                onChange={(e) => handelEmailChange(e.target.value)}/>
+                            </div>
+                        </div>
 
                 <div className="w-full flex flex-col gap-3">
                     <div className="w-full flex items-center bg-gray-800 p-2 rounded-xl gap-2 relative">

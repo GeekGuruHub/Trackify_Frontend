@@ -60,7 +60,7 @@ function RegistrationForm(){
             <div className="w-full h-screen flex items-center justify-center">
                 <div className="w-[90%] max-w-sm md:max-w-md lg:max-w-md p-5 bg-black flex-col flex items-center gap-3 rounded-xl shadow-green-500 shadow-lg">
                     <img src={Logo} alt="logo" className="w-12 md:w-20"/>
-                    <h1 className="text-lg md:text-xl font-semibold text-green-500">Register</h1>    
+                    <h1 className="text-lg md:text-xl font-semibold text-green-500">Register</h1><br/>
 
                     <div className="w-full flex flex-col gap-3">
                         <div className="w-full flex items-center bg-gray-800 p-2 rounded-xl gap-2">
