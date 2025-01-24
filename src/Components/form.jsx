@@ -51,6 +51,34 @@ function Form(){
                     console.log("User email stored in localStorage:", localStorage.getItem("userEmail"));
                     console.log("Login Response:", result.data);
 
+                    //new code
+
+                    // Fetch the budget after login
+                    const fetchBudgetOnLogin = async (userEmail) => {
+                        try {
+                        const response = await fetch(`https://localhost:44351/api/connectDB/GetBudget?userEmail=${userEmail}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log("Fetched Budget Data:", data);
+
+                            // Save budget to localStorage or state
+                            if (data.Budget !== undefined && data.Budget !== null) {
+                            localStorage.setItem("budget", data.Budget); // Save budget in localStorage
+                            console.log("Budget saved to localStorage:", data.Budget);
+                            } else {
+                            console.warn("No budget found for user.");
+                            }
+                        } else {
+                            console.error("Failed to fetch budget.");
+                        }
+                        } catch (error) {
+                        console.error("Error fetching budget: ", error);
+                        }
+                    };
+
+                    await fetchBudgetOnLogin(result.data.userEmail); // Fetch and save the user's budget
+                    //------------------
+
                     navigate("/Dashboard");
                 } else {
                     alert(`Error: ${result.data.message}`);  // Show message in case of an error or unsuccessful login
@@ -79,8 +107,8 @@ function Form(){
         
         
 
-    const [showPassword, setShowPassword] = useState(false);
-    const togglePasswordVisibility = () =>{
+        const [showPassword, setShowPassword] = useState(false);
+        const togglePasswordVisibility = () =>{
         setShowPassword(!showPassword);
 
     }
