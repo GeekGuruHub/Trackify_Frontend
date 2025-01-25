@@ -12,6 +12,7 @@ const ExpenseTracker = () => {
   const [currency, setCurrency] = useState("R");
   const [filteredCategory, setFilteredCategory] = useState(""); // New state for category filter
   const [filteredTotal, setFilteredTotal] = useState(0); // New state for filtered total
+  const [filteredMonth, setFilteredMonth] = useState(""); // New state for month filter
 
   const categories = [
     "Food",
@@ -24,7 +25,7 @@ const ExpenseTracker = () => {
     "Other",
   ];
 
-  // Helper function to calculate total for the filtered category
+  // Use this function to calculate the total amount for the selected category
   const calculateFilteredTotal = (expensesList, category) => {
     if (!category) return 0; // No category selected
     const filteredExpenses = expensesList.filter(
@@ -52,24 +53,29 @@ const ExpenseTracker = () => {
   const handleCategoryFilterChange = (e) => {
     const selectedCategory = e.target.value;
     setFilteredCategory(selectedCategory);
-  
-    // Filter expenses based on selected category
+
     if (selectedCategory) {
+      // Filter the expenses based on the selected category
       const filtered = expenses.filter(
-        (expense) => expense.Category === selectedCategory
+        (expense) =>
+          expense.Category.trim().toLowerCase() ===
+          selectedCategory.trim().toLowerCase()
       );
-      setFilteredExpenses(filtered); // Update filtered expenses
+
+      setFilteredExpenses(filtered);
+
+      // Calculate the total amount for the filtered category
+      const total = filtered.reduce(
+        (sum, expense) => sum + parseFloat(expense.Amount),
+        0
+      );
+      setFilteredTotal(total);
     } else {
-      setFilteredExpenses(expenses); // Reset to show all expenses
+      // Reset to show all expenses and totals if no category is selected
+      setFilteredExpenses(expenses);
+      setFilteredTotal(totalExpense);
     }
-  
-    // Calculate filtered total for the selected category
-    const total = calculateFilteredTotal(expenses, selectedCategory);
-    setFilteredTotal(total);
   };
-  
-  
-  
 
   const formatDate = (date) => {
     const newDate = new Date(date);
@@ -82,41 +88,61 @@ const ExpenseTracker = () => {
       const url = userEmail
         ? `https://localhost:44351/api/connectDB/GetAllExpenses?userEmail=${encodeURIComponent(userEmail)}`
         : "https://localhost:44351/api/connectDB/GetAllExpenses";
-  
+
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setExpenses(data); // Set all expenses
-        setFilteredExpenses(data); // Set filtered expenses to all initially
-  
-        // Calculate total for all expenses
-        const total = data.reduce(
-          (sum, expense) => sum + parseFloat(expense.Amount),
-          0
-        );
-        setTotalExpense(total); // Set total expense for all expenses
-  
-        // Calculate filtered total if a category is selected
-        if (filteredCategory) {
-          const filteredTotal = calculateFilteredTotal(data, filteredCategory);
-          setFilteredTotal(filteredTotal);
+        setExpenses(data || []); // Ensure expenses is always an array
+        setFilteredExpenses(data || []);
+
+        if (data.length === 0) {
+          // If no expenses, reset totals to 0
+          setTotalExpense(0);
+          setFilteredTotal(0);
+        } else {
+          // Calculate totals if there are expenses
+          const total = data.reduce(
+            (sum, expense) => sum + parseFloat(expense.Amount),
+            0
+          );
+          setTotalExpense(total);
+
+          // Recalculate filtered total if category is set
+          if (filteredCategory) {
+            const filteredTotal = calculateFilteredTotal(
+              data,
+              filteredCategory
+            );
+            setFilteredTotal(filteredTotal);
+          } else {
+            setFilteredTotal(total); // Set total for all expenses
+          }
         }
       } else {
         console.error("Failed to fetch expenses. Status:", response.status);
+        setExpenses([]); // Fallback to empty state on error
+        setFilteredExpenses([]);
+        setTotalExpense(0); // Reset totals if fetch fails
+        setFilteredTotal(0);
       }
     } catch (error) {
       console.error("Error fetching expenses:", error);
+      setExpenses([]); // Fallback to empty state on error
+      setFilteredExpenses([]);
+      setTotalExpense(0); // Reset totals on error
+      setFilteredTotal(0);
     }
   };
-  
-  
-  
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.name && formData.amount && formData.date && formData.category) {
+    if (
+      formData.name &&
+      formData.amount &&
+      formData.date &&
+      formData.category
+    ) {
       const userEmail = localStorage.getItem("userEmail");
       const userFirstName = localStorage.getItem("userName");
 
@@ -140,7 +166,7 @@ const ExpenseTracker = () => {
       );
 
       if (response.ok) {
-        fetchExpenses();
+        fetchExpenses(); // Re-fetch expenses after adding a new one
         setFormData({ name: "", amount: "", date: "", category: "" });
       } else {
         alert("Error: Unable to add expense.");
@@ -151,53 +177,89 @@ const ExpenseTracker = () => {
   };
 
   const handleDelete = async (expenseId) => {
+    console.log("Attempting to delete expense with ID:", expenseId);
+
     try {
       const userEmail = localStorage.getItem("userEmail");
+
+      // Check if expenseId is valid
+      if (!expenseId) {
+        console.error("Invalid expense ID:", expenseId);
+        alert("Error: Invalid expense ID.");
+        return;
+      }
+
       const response = await fetch(
         `https://localhost:44351/api/connectDB/DeleteExpense/${expenseId}?userEmail=${encodeURIComponent(userEmail)}`,
         {
           method: "DELETE",
         }
       );
-  
+
       if (response.ok) {
-        console.log(expenseId, userEmail);
-        // Refresh the expenses list after deletion
-        fetchExpenses();
+        // Re-fetch the updated expenses after deletion
+        await fetchExpenses(); // Use the already declared fetchExpenses function
+
+        alert("Expense deleted successfully.");
       } else {
+        const error = await response.text();
+        console.error(
+          "Error deleting expense. Status:",
+          response.status,
+          error
+        );
         alert("Error: Unable to delete expense.");
-        console.log("ExpenseID:", expenseId, "UserEmail:", userEmail);
       }
     } catch (error) {
-      console.error("Error deleting expense:", error);
+      console.error("Error during deletion:", error);
+      alert("Error: Unable to delete expense.");
     }
   };
-  
-  
+
+  const handleMonthFilterChange = (e) => {
+    const selectedMonth = e.target.value;
+    setFilteredMonth(selectedMonth);
+  };
 
   useEffect(() => {
-    fetchExpenses();
-  }, []); // Empty dependency array ensures it runs only on initial load
-  
+    fetchExpenses(); // Re-fetch expenses when component is mounted
+  }, []);
+
   useEffect(() => {
-    // Calculate total for all expenses (always)
-    const total = expenses.reduce(
+    let filtered = expenses;
+
+    // Filter by category if it's selected
+    if (filteredCategory) {
+      filtered = filtered.filter(
+        (expense) =>
+          expense.Category.trim().toLowerCase() ===
+          filteredCategory.trim().toLowerCase()
+      );
+    }
+
+    // Filter by month if it's selected
+    if (filteredMonth) {
+      const [year, month] = filteredMonth.split("-");
+      filtered = filtered.filter((expense) => {
+        const expenseDate = new Date(expense.Date);
+        const expenseYear = expenseDate.getFullYear();
+        const expenseMonth = (expenseDate.getMonth() + 1)
+          .toString()
+          .padStart(2, "0");
+
+        return expenseYear === parseInt(year) && expenseMonth === month;
+      });
+    }
+
+    // Update filtered expenses and the total for the filtered expenses
+    setFilteredExpenses(filtered);
+
+    const total = filtered.reduce(
       (sum, expense) => sum + parseFloat(expense.Amount),
       0
     );
-    setTotalExpense(total); // Update total for all expenses
-  }, [expenses]); // Recalculate whenever expenses change
-  
-  useEffect(() => {
-    // Calculate the filtered total based on the filtered expenses
-    const total = filteredExpenses.reduce(
-      (sum, expense) => sum + parseFloat(expense.Amount),
-      0
-    );
-    setFilteredTotal(total); // Update total for the filtered category
-  }, [filteredExpenses]); // Recalculate when filtered expenses change
-  
-  
+    setFilteredTotal(total);
+  }, [expenses, filteredCategory, filteredMonth]); // Run when expenses, filteredCategory, or filteredMonth change
 
   return (
     <div className="p-5">
@@ -244,11 +306,43 @@ const ExpenseTracker = () => {
         </select>
       </div>
 
+      {/* Month Filter */}
+      <div className="mb-5">
+        <label htmlFor="monthFilter" className="font-medium mr-2">
+          Filter by Month:
+        </label>
+        <select
+          id="monthFilter"
+          value={filteredMonth}
+          onChange={handleMonthFilterChange}
+          className="p-2 rounded-md border"
+        >
+          <option value="">All Months</option>
+          {expenses.map((expense) => {
+            const expenseDate = new Date(expense.Date);
+            const yearMonth = `${expenseDate.getFullYear()}-${(
+              expenseDate.getMonth() + 1
+            )
+              .toString()
+              .padStart(2, "0")}`;
+
+            return (
+              <option key={yearMonth} value={yearMonth}>
+                {expenseDate.toLocaleString("default", {
+                  year: "numeric",
+                  month: "long",
+                })}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+
+      {/* Expense Form */}
       <form
         onSubmit={handleSubmit}
         className="w-[90%] max-w-sm p-5 bg-black flex-col flex items-center justify-center gap-3 rounded-xl shadow-green-500 shadow-lg text-white"
       >
-        {/* Expense Form */}
         <input
           type="text"
           name="name"
@@ -294,56 +388,62 @@ const ExpenseTracker = () => {
       </form>
 
       <div className="mt-10">
-        {filteredExpenses.length > 0 ? (
-          <div>
-            <table className="table-auto border-collapse border border-gray-300 w-full text-left">
-              <thead>
-                <tr className="bg-green-500 text-white">
-                  <th className="border border-gray-300 p-2">Expense Name</th>
-                  <th className="border border-gray-300 p-2">Amount</th>
-                  <th className="border border-gray-300 p-2">Category</th>
-                  <th className="border border-gray-300 p-2">Date</th>
-                  <th className="border border-gray-300 p-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredExpenses.map((expense) => (
-                  <tr key={expense.ExpenseID} className="hover:bg-gray-900">
-                    <td className="border border-gray-300 p-2">{expense.ExpenseName}</td>
-                    <td className="border border-gray-300 p-2">
-                      {currency} {expense.Amount}
-                    </td>
-                    <td className="border border-gray-300 p-2">{expense.Category}</td>
-                    <td className="border border-gray-300 p-2">{formatDate(expense.Date)}</td>
-                    <td className="border border-gray-300 p-2">
-                      <button
-                        onClick={() => handleDelete(expense.ExpenseID)}
-                        className="bg-red-500 text-white px-3 py-1 rounded-md"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {/* Total Expense Display */}
-            <div className="text-right mt-4">
-              <h2 className="text-xl font-bold">
-                Total Expense: {currency} {totalExpense.toFixed(2)}
-              </h2>
-              {filteredCategory && filteredExpenses.length > 0 && (
-                <h2 className="text-lg font-bold text-green-500">
-                  Total for {filteredCategory}: {currency} {filteredTotal.toFixed(2)}
-                </h2>
-              )}
-            </div>
-          </div>
+        {filteredExpenses.length === 0 && filteredCategory ? (
+          <p>
+            No expenses available for the selected category: {filteredCategory}.
+          </p>
         ) : (
-          <p>No expenses found for the selected category</p>
+          <table className="table-auto border-collapse border border-gray-300 w-full text-left">
+            <thead>
+              <tr className="bg-green-500 text-white">
+                <th className="border border-gray-300 p-2">Expense Name</th>
+                <th className="border border-gray-300 p-2">Amount</th>
+                <th className="border border-gray-300 p-2">Date</th>
+                <th className="border border-gray-300 p-2">Category</th>
+                <th className="border border-gray-300 p-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredExpenses.map((expense) => (
+                <tr key={expense.Id}>
+                  <td className="border border-gray-300 p-2">
+                    {expense.ExpenseName}
+                  </td>
+                  <td className="border border-gray-300 p-2">
+                    {expense.Currency} {parseFloat(expense.Amount).toFixed(2)}
+                  </td>
+                  <td className="border border-gray-300 p-2">
+                    {formatDate(expense.Date)}
+                  </td>
+                  <td className="border border-gray-300 p-2">
+                    {expense.Category}
+                  </td>
+                  <td className="border border-gray-300 p-2">
+                    <button
+                      onClick={() => handleDelete(expense.ExpenseID)} // Pass ExpenseID here
+                      className="bg-red-500 text-white p-2 rounded-md"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
 
+      {/* Display Total Expenses */}
+      <div className="mt-5">
+        <h2 className="font-bold">
+          {filteredCategory
+            ? `Total Expense for ${filteredCategory}:`
+            : "Total Expense:"}
+        </h2>
+        <p>
+          {currency} {filteredTotal.toFixed(2)}
+        </p>
+      </div>
     </div>
   );
 };
