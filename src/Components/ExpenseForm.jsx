@@ -14,12 +14,14 @@ const ExpenseTracker = () => {
   const [filteredTotal, setFilteredTotal] = useState(0); // New state for filtered total
   const [filteredMonth, setFilteredMonth] = useState(""); // New state for month filter
 
+  const [customCategory, setCustomCategory] = useState(""); // New state for custom category input
+
   const categories = [
     "Food",
     "Transportation",
     "Entertainment",
     "Utilities",
-    "Healthcare",
+    "Medical Aid",
     "Education",
     "Takeouts",
     "Other",
@@ -42,6 +44,11 @@ const ExpenseTracker = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
+
+    // If category is changed to "Other", clear custom category input
+    if (e.target.name === "category" && e.target.value !== "Other") {
+      setCustomCategory(""); // Reset custom category input if another category is selected
+    }
   };
 
   const handleCurrencyChange = (e) => {
@@ -137,12 +144,11 @@ const ExpenseTracker = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (
-      formData.name &&
-      formData.amount &&
-      formData.date &&
-      formData.category
-    ) {
+    // Use custom category if "Other" is selected
+    const selectedCategory =
+      formData.category === "Other" ? customCategory : formData.category;
+
+    if (formData.name && formData.amount && formData.date && selectedCategory) {
       const userEmail = localStorage.getItem("userEmail");
       const userFirstName = localStorage.getItem("userName");
 
@@ -150,7 +156,7 @@ const ExpenseTracker = () => {
         ExpenseName: formData.name,
         Amount: parseFloat(formData.amount),
         Date: formData.date,
-        Category: formData.category,
+        Category: selectedCategory,
         Currency: currency,
         UserEmail: userEmail,
         UserFirstName: userFirstName,
@@ -168,6 +174,7 @@ const ExpenseTracker = () => {
       if (response.ok) {
         fetchExpenses(); // Re-fetch expenses after adding a new one
         setFormData({ name: "", amount: "", date: "", category: "" });
+        setCustomCategory(""); // Reset custom category input after form submission
       } else {
         alert("Error: Unable to add expense.");
       }
@@ -379,6 +386,17 @@ const ExpenseTracker = () => {
             </option>
           ))}
         </select>
+
+        {formData.category === "Other" && (
+          <input
+            type="text"
+            name="customCategory"
+            placeholder="Enter Custom Category"
+            value={customCategory}
+            onChange={(e) => setCustomCategory(e.target.value)}
+            className="p-2 rounded-md w-full"
+          />
+        )}
         <button
           type="submit"
           className="bg-green-500 text-white p-2 rounded-md mt-3"
